@@ -11,13 +11,6 @@ import LeafFoundation
 import FluentSQLiteDriver
 import LiquidLocalDriver
 /// modules
-//import UserModule
-//import SystemModule
-//
-//import AdminModule
-//import ApiModule
-//import FrontendModule
-//
 //import SwiftyModule
 //import MarkdownModule
 //import RedirectModule
@@ -72,8 +65,8 @@ public func configure(_ app: Application) throws {
         AdminBuilder(),
         ApiBuilder(),
         FrontendBuilder(),
-        MenuBuilder(),
         
+        MenuBuilder(),
         RedirectBuilder(),
         SponsorBuilder(),
         StaticBuilder(),
@@ -91,6 +84,8 @@ public func configure(_ app: Application) throws {
                                viewDirectory: app.directory.viewsDirectory,
                                defaultExtension: "html")
     
+    let featherCoreSource = FeatherCoreLeafSource(fileExtension: "html", fileio: app.fileio)
+    
     let moduleSource = ViperLeafSource(workingDirectory: app.directory.workingDirectory,
                                        modulesLocation: "Sources/App/Modules",
                                        templatesDirectory: "Templates",
@@ -99,6 +94,7 @@ public func configure(_ app: Application) throws {
 
     let multipleSources = LeafSources()
     try multipleSources.register(using: defaultSource)
+    try multipleSources.register(source: "feather-core", using: featherCoreSource)
     try multipleSources.register(source: "local-modules", using: moduleSource)
 
 //    for module in modules {
@@ -126,7 +122,8 @@ public func configure(_ app: Application) throws {
     app.views.use(.leaf)
     
     try app.viper.use(modules)
-    
+
+    app.middleware.use(FeatherCoreLeafExtensionMiddleware())
     app.middleware.use(LeafFeatherExtensionMiddleware())
     
     try app.autoMigrate().wait()
